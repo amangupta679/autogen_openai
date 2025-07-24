@@ -1,0 +1,9 @@
+name: esql-auto-fix-agent
+description: Automatically fixes ESQL code issues based on SonarQube output
+entry_point: agents/agent.py
+llm:
+  model: openai/gpt-4o
+  temperature: 0.2
+memory:
+  type: local
+  path: memory/
