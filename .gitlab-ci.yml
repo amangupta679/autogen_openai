@@ -1,4 +1,9 @@
+stages:
+  - analysis
+  - fix
+
 sonarqube-check:
+  stage: analysis
   tags:
     - sonartest
   variables:
@@ -10,6 +15,39 @@ sonarqube-check:
       - .sonar/cache
   script: 
     - sonar-scanner
+    # Export issues to JSON file after scan
+    - |
+      curl -u ${SONAR_TOKEN}: \
+        "${SONAR_HOST_URL}/api/issues/search?componentKeys=${CI_PROJECT_KEY}&resolved=false&types=BUG,CODE_SMELL,VULNERABILITY&ps=500" \
+        -o issues.json
+    # Commit the issues.json file to trigger the next stage
+    - git config --global user.email "ci@company.com"
+    - git config --global user.name "GitLab CI"
+    - git add issues.json
+    - git diff --staged --quiet || git commit -m "Update SonarQube issues.json [skip ci]"
+    - git push origin HEAD:${CI_COMMIT_REF_NAME} || true
+  artifacts:
+    paths:
+      - issues.json
+    expire_in: 1 hour
   allow_failure: true
   only:
     - master
+
+auto-fix-code:
+  stage: fix
+  tags:
+    - sonartest
+  variables:
+    GIT_DEPTH: "0"
+  dependencies:
+    - sonarqube-check
+  script:
+    - python autogen_agent.py
+  artifacts:
+    paths:
+      - "./repo/*.esql"
+    expire_in: 1 day
+  only:
+    - master
+  when: on_success

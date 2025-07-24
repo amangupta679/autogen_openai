@@ -61,9 +61,13 @@ class ESQLAutoFixAgent:
 
     def fetch_sonarqube_issues(self) -> Dict[str, Any]:
         try:
-            logger.info("Running SonarQube curl command...")
-            subprocess.run(SONAR_CURL_COMMAND, shell=True, check=True)
-            logger.info("issues.json downloaded.")
+            # Check if issues.json already exists (from CI pipeline)
+            if os.path.exists("issues.json"):
+                logger.info("Using existing issues.json file (from CI pipeline)")
+            else:
+                logger.info("Running SonarQube curl command...")
+                subprocess.run(SONAR_CURL_COMMAND, shell=True, check=True)
+                logger.info("issues.json downloaded.")
 
             with open("issues.json", "r", encoding="utf-8") as f:
                 issues_data = json.load(f)
@@ -73,6 +77,9 @@ class ESQLAutoFixAgent:
         except subprocess.CalledProcessError as e:
             logger.error(f"Error executing curl: {e}")
             return {"status": "error", "message": str(e)}
+        except FileNotFoundError:
+            logger.error("issues.json file not found")
+            return {"status": "error", "message": "issues.json file not found"}
 
     def fetch_code_from_gitlab(self) -> Dict[str, Any]:
         try:
