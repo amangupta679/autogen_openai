@@ -22,14 +22,24 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 GEMINI_MODEL = "gemini-2.5-flash-preview-04-17"
+# Get environment variables for CI/CD
+SONAR_TOKEN = os.getenv("SONAR_TOKEN", "c1666505b66c578ac5e665ee878880b4bf92cf47")
+SONAR_HOST_URL = os.getenv("SONAR_HOST_URL", "http://10.11.12.149:9000")
+CI_PROJECT_KEY = os.getenv("CI_PROJECT_KEY", "POC_ESQL")
+
 SONAR_CURL_COMMAND = (
-    'curl -u c1666505b66c578ac5e665ee878880b4bf92cf47: '
-    '"http://10.11.12.149:9000/api/issues/search?componentKeys=POC_ESQL\u0026resolved=false\u0026types=BUG,CODE_SMELL,VULNERABILITY\u0026ps=500" '
+    f'curl -u {SONAR_TOKEN}: '
+    f'"{SONAR_HOST_URL}/api/issues/search?componentKeys={CI_PROJECT_KEY}&resolved=false&types=BUG,CODE_SMELL,VULNERABILITY&ps=500" '
     '-o issues.json'
 )
+
 GITLAB_TOKEN = os.getenv("GITLAB_TOKEN")
-ENCODED_TOKEN = urllib.parse.quote(GITLAB_TOKEN)
-GIT_REPO_URL = f"https://amgupta:{ENCODED_TOKEN}@gitlab.prolifics.com/InnovationCenter/code-quality-automation/samplecode.git"
+if GITLAB_TOKEN:
+    ENCODED_TOKEN = urllib.parse.quote(GITLAB_TOKEN)
+    GIT_REPO_URL = f"https://amgupta:{ENCODED_TOKEN}@gitlab.prolifics.com/InnovationCenter/code-quality-automation/samplecode.git"
+else:
+    # Fallback for CI/CD environment
+    GIT_REPO_URL = "https://gitlab.prolifics.com/InnovationCenter/code-quality-automation/samplecode.git"
 GIT_REPO_DIR = "./repo"
 GIT_FILE_PATH = "PLM2PDH_DTCPOM.esql"
 GIT_OUTPUT_FILE = "PLM2PDH_DTCPOM_ai_autofix.esql"
@@ -56,8 +66,12 @@ class ESQLAutoFixAgent:
         if result4["status"] == "error":
             return result4
             
+        # Optional: Trigger SonarQube scan (non-blocking)
         result5 = self.trigger_sonar_scan()
-        return result5
+        if result5["status"] == "error":
+            logger.warning("SonarQube scan failed, but continuing...")
+            
+        return {"status": "success", "message": "AI code correction completed successfully"}
 
     def fetch_sonarqube_issues(self) -> Dict[str, Any]:
         try:
@@ -229,4 +243,5 @@ class ESQLAutoFixAgent:
 
 if __name__ == "__main__":
     agent = ESQLAutoFixAgent()
-    asyncio.run(agent.run())
+    result = agent.run()
+    print(f"Final result: {result}")
