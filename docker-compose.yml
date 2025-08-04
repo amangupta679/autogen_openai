@@ -1,0 +1,157 @@
+version: '3.8'
+
+# AutoGen AI Code Correction Agent - Production Deployment
+# =========================================================
+# Proprietary IP Container Orchestration
+
+services:
+  autogen-ai-agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: autogen-ai-agent:latest
+    container_name: autogen-code-corrector
+    restart: unless-stopped
+    
+    # Environment configuration - Use .env file for secrets
+    env_file:
+      - .env
+    
+    environment:
+      # Container-specific settings
+      - CONTAINER_MODE=production
+      - LOG_LEVEL=INFO
+      - PYTHONUNBUFFERED=1
+      - PYTHONDONTWRITEBYTECODE=1
+      
+      # Application settings (can be overridden in .env)
+      - SONAR_HOST_URL=${SONAR_HOST_URL:-http://sonarqube:9000}
+      - CI_PROJECT_KEY=${CI_PROJECT_KEY:-autogen-project}
+      - GIT_REPO_DIR=/app/repo
+      - DOWNLOADS_DIR=/app/downloads
+    
+    # Volume mounts for persistence
+    volumes:
+      # Persistent data
+      - agent-downloads:/app/downloads
+      - agent-logs:/app/logs
+      - agent-repo:/app/repo
+      
+      # Configuration files (optional)
+      # - ./config:/app/config:ro
+      
+      # Host filesystem access (if needed for development)
+      # - ./reports:/host-reports
+    
+    # Port mapping (if web interface is added)
+    ports:
+      - "8080:8080"
+    
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import autogen, openai; print('Agent healthy')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    
+    # Network configuration
+    networks:
+      - autogen-network
+    
+    # Dependencies (if using external services)
+    depends_on:
+      - sonarqube
+    
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    
+    # User mapping (security)
+    user: "${UID:-1000}:${GID:-1000}"
+
+  # Optional: SonarQube service for development/testing
+  sonarqube:
+    image: sonarqube:lts
+    container_name: sonarqube-server
+    restart: unless-stopped
+    
+    environment:
+      - SONAR_ES_BOOTSTRAP_CHECKS_DISABLE=true
+      - SONAR_JAVA_PATH=/opt/java/openjdk/bin/java
+    
+    volumes:
+      - sonarqube-data:/opt/sonarqube/data
+      - sonarqube-logs:/opt/sonarqube/logs
+      - sonarqube-extensions:/opt/sonarqube/extensions
+    
+    ports:
+      - "9000:9000"
+    
+    networks:
+      - autogen-network
+    
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+        reservations:
+          cpus: '0.25'
+          memory: 512M
+
+# Volume definitions for data persistence
+volumes:
+  agent-downloads:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/downloads
+  
+  agent-logs:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/logs
+  
+  agent-repo:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data/repo
+  
+  sonarqube-data:
+    driver: local
+  
+  sonarqube-logs:
+    driver: local
+  
+  sonarqube-extensions:
+    driver: local
+
+# Network configuration
+networks:
+  autogen-network:
+    driver: bridge
+    name: autogen-ai-network

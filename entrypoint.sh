@@ -2,7 +2,7 @@
 
 echo "[INFO] Bootstrapping container startup..."
 
-echo "[INFO] Running code fix pipeline..."
-python3 esql_handler_agent/agents/agent.py
+echo "[INFO] Running AutoGen AI Code Correction Agent..."
+python3 autogen_agent.py
 
-echo "[INFO] Done."
+echo "[INFO] AutoGen agent execution completed."
