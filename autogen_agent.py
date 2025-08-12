@@ -49,7 +49,7 @@ else:
     GIT_REPO_URL = "https://gitlab.prolifics.com/InnovationCenter/code-quality-automation/samplecode.git"
 GIT_REPO_DIR = "./repo"
 GIT_FILE_PATH = "PLM2PDH_DTCPOM.esql"
-GIT_OUTPUT_FILE = "PLM2PDH_DTCPOM_ai_autofix.esql"
+GIT_OUTPUT_FILE = "PLM2PDH_DTCPOM.esql"
 
 class ESQLAutoFixAgent:
     def __init__(self):
@@ -1011,61 +1011,61 @@ AFTER AI CORRECTION:
                     transform=ax3.transAxes, fontsize=14, fontweight='bold', color='green')
             ax3.set_title('Issues Distribution - After', fontweight='bold', color='green')
         
-        # 4. Issues Trend Over Time (Top Right)
-        ax4 = plt.subplot(2, 4, 4)
-        months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
-        # Simulate trend data based on actual metrics
-        total_before = sum(before_values)
-        total_after = sum(after_values)
+        # # 4. Issues Trend Over Time (Top Right)
+        # ax4 = plt.subplot(2, 4, 4)
+        # months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+        # # Simulate trend data based on actual metrics
+        # total_before = sum(before_values)
+        # total_after = sum(after_values)
         
-        # Create realistic trend
-        before_trend = [total_before * (1 + 0.02 * i) for i in range(6)]  # Slightly increasing
-        after_trend = [total_after * (1 - 0.05 * i) for i in range(6)]   # Decreasing trend
+        # # Create realistic trend
+        # before_trend = [total_before * (1 + 0.02 * i) for i in range(6)]  # Slightly increasing
+        # after_trend = [total_after * (1 - 0.05 * i) for i in range(6)]   # Decreasing trend
         
-        ax4.plot(months, before_trend, marker='o', linewidth=3, markersize=6,
-                label='Before Correction', color=red_color)
-        ax4.plot(months, after_trend, marker='s', linewidth=3, markersize=6,
-                label='After Correction', color=green_color)
+        # ax4.plot(months, before_trend, marker='o', linewidth=3, markersize=6,
+        #         label='Before Correction', color=red_color)
+        # ax4.plot(months, after_trend, marker='s', linewidth=3, markersize=6,
+        #         label='After Correction', color=green_color)
         
-        ax4.set_xlabel('Month')
-        ax4.set_ylabel('Total Issues')
-        ax4.set_title('Issues Trend Over Time')
-        ax4.legend()
-        ax4.grid(True, alpha=0.3)
+        # ax4.set_xlabel('Month')
+        # ax4.set_ylabel('Total Issues')
+        # ax4.set_title('Issues Trend Over Time')
+        # ax4.legend()
+        # ax4.grid(True, alpha=0.3)
         
-        # 5. Improvement Percentage by Category (Bottom Left)
-        ax5 = plt.subplot(2, 4, 5)
-        improvement_percentages = []
-        improvement_categories = []
+        # # 5. Improvement Percentage by Category (Bottom Left)
+        # ax5 = plt.subplot(2, 4, 5)
+        # improvement_percentages = []
+        # improvement_categories = []
         
-        for i, category in enumerate(categories):
-            before_val = before_values[i]
-            after_val = after_values[i]
-            if before_val > 0:
-                improvement = ((before_val - after_val) / before_val) * 100
-                improvement_percentages.append(max(0, improvement))  # Don't show negative improvements
-                improvement_categories.append(category)
+        # for i, category in enumerate(categories):
+        #     before_val = before_values[i]
+        #     after_val = after_values[i]
+        #     if before_val > 0:
+        #         improvement = ((before_val - after_val) / before_val) * 100
+        #         improvement_percentages.append(max(0, improvement))  # Don't show negative improvements
+        #         improvement_categories.append(category)
         
-        if improvement_percentages:
-            bars = ax5.bar(improvement_categories, improvement_percentages,
-                          color=['#00B894', '#00CEC9', '#74B9FF', '#A29BFE'][:len(improvement_categories)],
-                          alpha=0.8)
+        # if improvement_percentages:
+        #     bars = ax5.bar(improvement_categories, improvement_percentages,
+        #                   color=['#00B894', '#00CEC9', '#74B9FF', '#A29BFE'][:len(improvement_categories)],
+        #                   alpha=0.8)
             
-            ax5.set_xlabel('Issue Priority')
-            ax5.set_ylabel('Improvement (%)')
-            ax5.set_title('Improvement Percentage by Category')
-            ax5.set_ylim(0, 100)
-            ax5.grid(axis='y', linestyle='--', alpha=0.3)
+        #     ax5.set_xlabel('Issue Priority')
+        #     ax5.set_ylabel('Improvement (%)')
+        #     ax5.set_title('Improvement Percentage by Category')
+        #     ax5.set_ylim(0, 100)
+        #     ax5.grid(axis='y', linestyle='--', alpha=0.3)
             
-            # Add percentage labels
-            for bar, percentage in zip(bars, improvement_percentages):
-                height = bar.get_height()
-                ax5.text(bar.get_x() + bar.get_width()/2., height + 1,
-                        f'{percentage:.1f}%', ha='center', va='bottom', fontweight='bold')
-        else:
-            ax5.text(0.5, 0.5, 'No\nImprovement\nData', ha='center', va='center',
-                    transform=ax5.transAxes, fontsize=12, fontweight='bold')
-            ax5.set_title('Improvement Percentage by Category')
+        #     # Add percentage labels
+        #     for bar, percentage in zip(bars, improvement_percentages):
+        #         height = bar.get_height()
+        #         ax5.text(bar.get_x() + bar.get_width()/2., height + 1,
+        #                 f'{percentage:.1f}%', ha='center', va='bottom', fontweight='bold')
+        # else:
+        #     ax5.text(0.5, 0.5, 'No\nImprovement\nData', ha='center', va='center',
+        #             transform=ax5.transAxes, fontsize=12, fontweight='bold')
+        #     ax5.set_title('Improvement Percentage by Category')
         
         # 6. Summary Statistics Table (Bottom Center)
         ax6 = plt.subplot(2, 4, (6, 7))
